@@ -1,0 +1,105 @@
+1、Accel_IMU_Raw 和 Accel_Vehicle 的区别
+2、IMU 坐标系
+3、PoseSigma 为什么不是经纬度的误差，而是 ENU
+3、为什么 AngleRate、Accel 没有 Sigma
+
+
+Time
+Ang_Rate_Raw_IMU
+Accel_IMU_Raw
+InsStatus
+Longitude
+Latitude
+Altitude
+PosSigma
+VelocityLevel
+VelocityLevelSigma
+Accel_Vehicle
+HeadingPitchRoll
+HeadingPitchRollSigma
+AngRateVehicle
+
+
+(1673254033.265913) can0 320#08C4070951BC0000 ::
+Time(
+    GpsWeek: 2244 w,
+    GpsTime: 118051.26000000001 s
+)
+(1673254033.266132) can0 321#FFF92000420003C0 ::
+Ang_Rate_Raw_IMU(
+    AngRateRawX: -1.1 deg/s,
+    AngRateRawY: 0.66 deg/s,
+    AngRateRawZ: 0.6 deg/s
+)
+(1673254033.266386) can0 322#FFF2AFFECF025820 ::
+Accel_IMU_Raw(
+    AccelRawX: -0.021400000000000002 g,
+    AccelRawY: -0.030500000000000003 g,
+    AccelRawZ: 0.9602 g
+)
+(1673254033.266641) can0 323#0218040000640000 ::
+InsStatus(
+    system_state: 2,
+    GpsNumSatsUsed: 24,
+    satellite_status: 4,
+    GpsNumSats2Used: 0,
+    GpsAge: 1.0,
+    GpsNumSats: 0,
+    GpsNumSats2: 0
+)
+(1673254033.266897) can0 32D#00000002A82E0392 ::
+Longitude(
+    PosLon2: 114.1152245 deg
+)
+(1673254033.267150) can0 32E#00000000B58CF01E ::
+Latitude(
+    PosLat2: 30.45912606 deg
+)
+(1673254033.267415) can0 325#0000375500000000 ::
+Altitude(
+    PosAlt: 14.165000000000001 m
+)
+(1673254033.267666) can0 326#0014F00186001530 ::
+PosSigma(
+    PosESigma: 0.0335 m,
+    PosNsigma: 0.039 m,
+    PosUsigma: 0.0339 m
+)
+(1673254033.267915) can0 327#02660145026602B6 ::
+VelocityLevel(
+    VelE: 6.140000000000001 m/s,
+    VelN: 3.25 m/s,
+    VelU: 6.140000000000001 m/s,
+    Vel: 6.94 m/s
+)
+(1673254033.268171) can0 328#00140013000B001E ::
+VelocityLevelSigma(
+    VelESigma: 0.02 m/s,
+    VelNSigma: 0.019 m/s,
+    VelUSigma: 0.011 m/s,
+    VelSigma: 0.03 m/s
+)
+(1673254033.268426) can0 329#FFF92FFDF8027930 ::
+Accel_Vehicle(
+    AccelX: -0.011000000000000001 g,
+    AccelY: -0.052000000000000005 g,
+    AccelZ: 1.0131000000000001 g
+)
+(1673254033.268683) can0 32A#1826FFDC003E0000 ::
+HeadingPitchRoll(
+    AngleHeading: 61.82 deg,
+    AnglePitch: -0.36 deg,
+    AngleRoll: 0.62 deg
+)
+(1673254033.268934) can0 32B#002D70046D004630 ::
+HeadingPitchRollSigma(
+    AngleHeadingSigma: 0.0727 deg,
+    AnglePitchSigma: 0.11330000000000001 deg,
+    AngleRollSigma: 0.11230000000000001 deg
+)
+(1673254033.269196) can0 32C#00000000320001B0 ::
+AngRateVehicle(
+    AngRateX: 0.0 deg/s,
+    AngRateY: 0.5 deg/s,
+    AngRateZ: 0.27 deg/s
+)

@@ -90,6 +90,7 @@ def write_lidar_msg(bag, pcd_list, time_list, topic, frame_id):
         header.stamp = rospy.Time.from_sec(time_list[i])
         header.frame_id = frame_id
         pc2 = point_cloud2.create_cloud(header, fields, points)
+        pc2.is_dense = True
         bag.write(topic, pc2, header.stamp)
         
 

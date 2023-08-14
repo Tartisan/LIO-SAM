@@ -140,6 +140,7 @@ public:
     void resetParameters()
     {
         laserCloudIn->clear();
+        fullCloud->clear();
         extractedCloud->clear();
         // reset range matrix for range image projection
         rangeMat = cv::Mat(N_SCAN, Horizon_SCAN, CV_32F, cv::Scalar::all(FLT_MAX));

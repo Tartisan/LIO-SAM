@@ -3,14 +3,14 @@
 **A real-time lidar-inertial odometry package. We strongly recommend the users read this document thoroughly and test the package with the provided dataset first. A video of the demonstration of the method can be found on [YouTube](https://www.youtube.com/watch?v=A0H8CoORZJU).**
 
 <p align='center'>
-    <img src="./config/doc/demo.gif" alt="drawing" width="800"/>
+    <img src="./doc/demo.gif" alt="drawing" width="800"/>
 </p>
 
 <p align='center'>
-    <img src="./config/doc/device-hand-2.png" alt="drawing" width="200"/>
-    <img src="./config/doc/device-hand.png" alt="drawing" width="200"/>
-    <img src="./config/doc/device-jackal.png" alt="drawing" width="200"/>
-    <img src="./config/doc/device-livox-horizon.png" alt="drawing" width="200"/>
+    <img src="./doc/device-hand-2.png" alt="drawing" width="200"/>
+    <img src="./doc/device-hand.png" alt="drawing" width="200"/>
+    <img src="./doc/device-jackal.png" alt="drawing" width="200"/>
+    <img src="./doc/device-livox-horizon.png" alt="drawing" width="200"/>
 </p>
 
 ## Menu
@@ -44,7 +44,7 @@
 ## System architecture
 
 <p align='center'>
-    <img src="./config/doc/system.png" alt="drawing" width="800"/>
+    <img src="./doc/system.png" alt="drawing" width="800"/>
 </p>
 
 We design a system that maintains two graphs and runs up to 10x faster than real-time.
@@ -116,10 +116,10 @@ The user needs to prepare the point cloud data in the correct format for cloud d
 
 
 <p align='center'>
-    <img src="./config/doc/imu-transform.png" alt="drawing" width="800"/>
+    <img src="./doc/imu-transform.png" alt="drawing" width="800"/>
 </p>
 <p align='center'>
-    <img src="./config/doc/imu-debug.gif" alt="drawing" width="800"/>
+    <img src="./doc/imu-debug.gif" alt="drawing" width="800"/>
 </p>
 
 ## Sample datasets
@@ -142,7 +142,7 @@ The user needs to prepare the point cloud data in the correct format for cloud d
   * Livox Horizon dataset. Please refer to the following notes section for paramater changes.
     - **Livox Horizon:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
 
-  * KITTI dataset. The extrinsics can be found in the Notes KITTI section below. To generate more bags using other KITTI raw data, you can use the python script provided in "config/doc/kitti2bag".
+  * KITTI dataset. The extrinsics can be found in the Notes KITTI section below. To generate more bags using other KITTI raw data, you can use the python script provided in /doc/kitti2bag".
     - **2011_09_30_drive_0028:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
 
 ## Run the package
@@ -162,14 +162,14 @@ rosbag play your-bag.bag -r 3
   - **Loop closure:** The loop function here gives an example of proof of concept. It is directly adapted from LeGO-LOAM loop closure. For more advanced loop closure implementation, please refer to [ScanContext](https://github.com/irapkaist/SC-LeGO-LOAM). Set the "loopClosureEnableFlag" in "params.yaml" to "true" to test the loop closure function. In Rviz, uncheck "Map (cloud)" and check "Map (global)". This is because the visualized map - "Map (cloud)" - is simply a stack of point clouds in Rviz. Their postion will not be updated after pose correction. The loop closure function here is simply adapted from LeGO-LOAM, which is an ICP-based method. Because ICP runs pretty slow, it is suggested that the playback speed is set to be "-r 1". You can try the Garden dataset for testing.
 
 <p align='center'>
-    <img src="./config/doc/loop-closure.gif" alt="drawing" width="350"/>
-    <img src="./config/doc/loop-closure-2.gif" alt="drawing" width="350"/>
+    <img src="./doc/loop-closure.gif" alt="drawing" width="350"/>
+    <img src="./doc/loop-closure-2.gif" alt="drawing" width="350"/>
 </p>
 
   - **Using GPS:** The park dataset is provided for testing LIO-SAM with GPS data. This dataset is gathered by [Yewei Huang](https://robustfieldautonomylab.github.io/people.html). To enable the GPS function, change "gpsTopic" in "params.yaml" to "odometry/gps". In Rviz, uncheck "Map (cloud)" and check "Map (global)". Also check "Odom GPS", which visualizes the GPS odometry. "gpsCovThreshold" can be adjusted to filter bad GPS readings. "poseCovThreshold" can be used to adjust the frequency of adding GPS factor to the graph. For example, you will notice the trajectory is constantly corrected by GPS whey you set "poseCovThreshold" to 1.0. Because of the heavy iSAM optimization, it's recommended that the playback speed is "-r 1".
 
 <p align='center'>
-    <img src="./config/doc/gps-demo.gif" alt="drawing" width="400"/>
+    <img src="./doc/gps-demo.gif" alt="drawing" width="400"/>
 </p>
 
   - **KITTI:** Since LIO-SAM needs a high-frequency IMU for function properly, we need to use KITTI raw data for testing. One problem remains unsolved is that the intrinsics of the IMU are unknown, which has a big impact on the accuracy of LIO-SAM. Download the provided sample data and make the following changes in "params.yaml":
@@ -181,8 +181,8 @@ rosbag play your-bag.bag -r 3
     - loopClosureEnableFlag: true or false
 
 <p align='center'>
-    <img src="./config/doc/kitti-map.png" alt="drawing" width="300"/>
-    <img src="./config/doc/kitti-demo.gif" alt="drawing" width="300"/>
+    <img src="./doc/kitti-map.png" alt="drawing" width="300"/>
+    <img src="./doc/kitti-demo.gif" alt="drawing" width="300"/>
 </p>
 
   - **Ouster lidar:** To make LIO-SAM work with Ouster lidar, some preparations need to be done on hardware and software level.
@@ -196,8 +196,8 @@ rosbag play your-bag.bag -r 3
       It seems that the point coordinate definition might be different in different generations. Please refer to [Issue #94](https://github.com/TixiaoShan/LIO-SAM/issues/94) for debugging.
 
 <p align='center'>
-    <img src="./config/doc/ouster-device.jpg" alt="drawing" width="300"/>
-    <img src="./config/doc/ouster-demo.gif" alt="drawing" width="300"/>
+    <img src="./doc/ouster-device.jpg" alt="drawing" width="300"/>
+    <img src="./doc/ouster-demo.gif" alt="drawing" width="300"/>
 </p>
 
   - **Livox Horizon lidar:** Please note that solid-state lidar hasn't been extensively tested with LIO-SAM yet. An external IMU is also used here rather than the internal one. The support for such lidars is based on minimal change of the codebase from mechanical lidars. A customized [livox_ros_driver](https://github.com/TixiaoShan/livox_ros_driver) needs to be used to publish point cloud format that can be processed by LIO-SAM. Other SLAM solutions may offer better implementations. More studies and suggestions are welcome. Please change the following parameters to make LIO-SAM work with Livox Horizon lidar:
@@ -208,7 +208,7 @@ rosbag play your-bag.bag -r 3
     - Use [livox_ros_driver](https://github.com/TixiaoShan/livox_ros_driver) for data recording
 
 <p align='center'>
-    <img src="./config/doc/livox-demo.gif" alt="drawing" width="600"/>
+    <img src="./doc/livox-demo.gif" alt="drawing" width="600"/>
 </p>
 
 ## Service
@@ -234,7 +234,7 @@ rosbag play your-bag.bag -r 3
 
 ## Paper
 
-Thank you for citing [LIO-SAM (IROS-2020)](./config/doc/paper.pdf) if you use any of this code.
+Thank you for citing [LIO-SAM (IROS-2020)](./doc/paper.pdf) if you use any of this code.
 ```
 @inproceedings{liosam2020shan,
   title={LIO-SAM: Tightly-coupled Lidar Inertial Odometry via Smoothing and Mapping},
