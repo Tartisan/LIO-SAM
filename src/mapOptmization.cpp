@@ -372,21 +372,21 @@ public:
         if (timeLaserInfoCur - timeLastProcessing >= mappingProcessInterval)
         {
             timeLastProcessing = timeLaserInfoCur;
-
+            // 当前帧位姿初始化
             updateInitialGuess();
-
+            // 构建局部地图
             extractSurroundingKeyFrames();
-
+            // 对当前帧点云做降采样
             downsampleCurrentScan();
-
+            // 将当前帧点云匹配到构建的局部地图，优化当前位姿
             scan2MapOptimization();
-
+            // 计算是否将当前帧采纳为关键帧，加入因子图优化
             saveKeyFramesAndFactor();
-
+            // 当新的回环因子或者GPS因子加入因子图时，对历史帧执行位姿更新
             correctPoses();
-
+            // 发布激光历程计
             publishOdometry();
-
+            // 发布当前帧对齐到地图坐标系的点云和完整轨迹
             publishFrames();
         }
     }

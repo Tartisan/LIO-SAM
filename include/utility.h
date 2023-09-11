@@ -127,8 +127,6 @@ public:
     float odometrySurfLeafSize;
     float mappingCornerLeafSize;
     float mappingSurfLeafSize ;
-    float surroundingKeyframeMapLeafSize;
-    float loopClosureICPSurfLeafSize ;
 
     float z_tollerance; 
     float rotation_tollerance;
@@ -156,6 +154,8 @@ public:
     float globalMapVisualizationSearchRadius;
     float globalMapVisualizationPoseDensity;
     float globalMapVisualizationLeafSize;
+
+    float imu_rate;
 
     ParamServer()
     {
@@ -234,7 +234,6 @@ public:
         nh.param<float>("lio_sam/odometrySurfLeafSize", odometrySurfLeafSize, 0.2);
         nh.param<float>("lio_sam/mappingCornerLeafSize", mappingCornerLeafSize, 0.2);
         nh.param<float>("lio_sam/mappingSurfLeafSize", mappingSurfLeafSize, 0.2);
-        // nh.param<float>("lio_sam/surroundingKeyframeMapLeafSize", surroundingKeyframeMapLeafSize, 0.2);
 
         nh.param<float>("lio_sam/z_tollerance", z_tollerance, FLT_MAX);
         nh.param<float>("lio_sam/rotation_tollerance", rotation_tollerance, FLT_MAX);
@@ -245,7 +244,6 @@ public:
         nh.param<float>("lio_sam/surroundingkeyframeAddingDistThreshold", surroundingkeyframeAddingDistThreshold, 1.0);
         nh.param<float>("lio_sam/surroundingkeyframeAddingAngleThreshold", surroundingkeyframeAddingAngleThreshold, 0.2);
         nh.param<float>("lio_sam/surroundingKeyframeDensity", surroundingKeyframeDensity, 1.0);
-        // nh.param<float>("lio_sam/loopClosureICPSurfLeafSize", loopClosureICPSurfLeafSize, 0.3);
         nh.param<float>("lio_sam/surroundingKeyframeSearchRadius", surroundingKeyframeSearchRadius, 50.0);
 
         nh.param<bool>("lio_sam/loopClosureEnableFlag", loopClosureEnableFlag, false);
