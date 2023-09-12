@@ -1033,6 +1033,14 @@ public:
             transformTobeMapped[0] = cloudInfo.imuRollInit;
             transformTobeMapped[1] = cloudInfo.imuPitchInit;
             transformTobeMapped[2] = cloudInfo.imuYawInit;
+            
+            if (!gpsQueue.empty()) {
+                nav_msgs::Odometry firstGPS = gpsQueue.front();
+                transformTobeMapped[2] = tf::getYaw(firstGPS.pose.pose.orientation);
+                std::cout << "gpsQueue not empty, yaw: " << transformTobeMapped[2]*180./M_PI << " deg" << std::endl;
+            } else {
+                std::cout << "gpsQueue empty" << std::endl;
+            }
 
             if (!useImuHeadingInitialization)
                 transformTobeMapped[2] = 0;

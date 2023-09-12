@@ -58,6 +58,11 @@ def read_gpsimu_from_txt(path: str):
 
         华测: 
         heading 正北方向顺时针旋转为正，范围 0-360°
+        InsStatus
+            system_state: 0 初始化, 1 卫导模式, 2 组合导航模式, 3 纯惯导模式
+            satellite_status: 0 不定位不定向, 1 单点定位定向, 2 伪距差分定位定向, 3 组合推算，
+                              4 RTK稳定解定位定向, 5 RTK浮点解定位定向, 6 单点定位不定向，
+                              7 伪距差分定位不定向, 8 RTK稳定解定位不定向, 9 RTK浮点解定位不定向
 
     Signals 02:
         GPS_time, Three_axis_attitude, lon_and_lat, alt_and_flag, 

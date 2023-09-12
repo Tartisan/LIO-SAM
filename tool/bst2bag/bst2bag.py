@@ -47,7 +47,8 @@ def write_imu_msg(bag, imu_info):
            'HeadingPitchRollSigma' in info.keys() and 'Accel_Vehicle' in info.keys() and \
            'AngRateVehicle' in info.keys() and 'PoseSigma' in info.keys() and \
            'VelocityLevel' in info.keys() and 'Latitude' in info.keys() and \
-           'Longitude' in info.keys() and 'Altitude' in info.keys()):
+           'Longitude' in info.keys() and 'Altitude' in info.keys()) and \
+           'InsStatus' in info.keys():
             continue
 
         # IMU raw
@@ -132,6 +133,9 @@ def write_imu_msg(bag, imu_info):
         gps.position_covariance_type = 2 # covariance in ENU coord
         gps.position_covariance = pose_covariance.flatten().tolist()
         gps.status.service = 4
+        gps.status.status = -1
+        if info['InsStatus'][2] == 4 or info['InsStatus'][2] == 8:
+            gps.status.status = 0
         bag.write(gps_fix_topic, gps, t=gps.header.stamp)
 
         # Velocity
