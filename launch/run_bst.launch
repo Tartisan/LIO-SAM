@@ -12,7 +12,9 @@
     <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" />
 
     <!--- Run Navsat -->
-    <node pkg="lio_sam" type="lio_sam_gpsOdometry" name="lio_sam_gpsOdometry" output="log" />
+    <node pkg="lio_sam" type="lio_sam_gpsOdometry" name="lio_sam_gpsOdometry" output="log" >
+        <!-- <param name="initial_lonlat" value="120.20356286700817, 30.347571041456902"/> -->
+    </node>
 
     <!--- Run Rviz-->
     <include file="$(find lio_sam)/launch/include/module_rviz.launch" />

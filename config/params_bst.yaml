@@ -13,14 +13,16 @@ lio_sam:
   mapFrame: "map"
 
   # GPS Settings
-  useImuHeadingInitialization: true           # if using GPS data, set to "true"
+  useGpsOdometry: false                       # whether use GPS odometry 
+  useImuHeadingInitialization: false          # if using GPS data, set to "true"
   useGpsElevation: false                      # if GPS elevation is bad, set to "false"
   gpsCovThreshold: 2.0                        # m^2, threshold for using GPS data
   poseCovThreshold: 25.0                      # m^2, threshold for using GPS data
   
   # Export settings
   savePCD: true                               # https://github.com/TixiaoShan/LIO-SAM/issues/3
-  savePCDDirectory: "/Downloads/LOAM/"        # in your home folder, starts and ends with "/". Warning: the code deletes "LOAM" folder then recreates it. See "mapOptimization" for implementation
+  # Warning: the code deletes the folder then recreates it. See "mapOptimization" for implementation
+  savePCDDirectory: "/workspace/work/code/bst-slam/data/"        # in your home folder, starts and ends with "/". 
 
   # Sensor Settings
   sensor: robosense                           # lidar sensor type, 'velodyne' or 'ouster' or 'livox' or 'robosense'

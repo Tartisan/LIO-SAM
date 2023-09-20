@@ -61,9 +61,12 @@ catkin_package(
   visualization_msgs
 )
 
+add_subdirectory(third_party/GeographicLib)
+
 # include directories
 include_directories(
-	include
+  include
+  third_party/GeographicLib/include
 	${catkin_INCLUDE_DIRS}
 	${PCL_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}

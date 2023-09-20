@@ -28,13 +28,17 @@ using symbol_shorthand::B; // Bias  (ax,ay,az,gx,gy,gz)
 using symbol_shorthand::G; // GPS pose
 
 
-void saveOptimizedVerticesKITTIformat(gtsam::Values _estimates, std::string _filename)
+void saveOptimizedVerticesKITTIformat(std::vector<int> keyframe_ids, 
+                                      gtsam::Values _estimates, 
+                                      std::string _filename)
 {
     using namespace gtsam;
 
     // ref from gtsam's original code "dataset.cpp"
     std::fstream stream(_filename.c_str(), fstream::out);
 
+    assert(keyframe_ids.size() == _estimates.size());
+    int count = 0;
     for(const auto& key_value: _estimates) {
         auto p = dynamic_cast<const GenericValue<Pose3>*>(&key_value.value);
         if (!p) continue;
@@ -47,9 +51,11 @@ void saveOptimizedVerticesKITTIformat(gtsam::Values _estimates, std::string _fil
         auto col2 = R.column(2); // Point3
         auto col3 = R.column(3); // Point3
 
+        stream << keyframe_ids[count] << " ";
         stream << col1.x() << " " << col2.x() << " " << col3.x() << " " << t.x() << " "
                << col1.y() << " " << col2.y() << " " << col3.y() << " " << t.y() << " "
                << col1.z() << " " << col2.z() << " " << col3.z() << " " << t.z() << std::endl;
+        ++count;
     }
 }
 
@@ -169,7 +175,7 @@ public:
     ros::Time timeLaserInfoStamp;
     double timeLaserInfoCur;
 
-    float transformTobeMapped[6];
+    float transformTobeMapped[6]; // lio_sam/mapping/odometry
 
     std::mutex mtx;
     std::mutex mtxLoopInfo;
@@ -203,6 +209,7 @@ public:
     SCManager scManager;
 
     // data saver
+    std::vector<int> keyframe_ids;
     std::fstream pgSaveStream; // pg: pose-graph 
     std::fstream pgTimeSaveStream; // pg: pose-graph 
     std::vector<std::string> edges_str;
@@ -231,7 +238,7 @@ public:
         subGPS   = nh.subscribe<nav_msgs::Odometry> (gpsTopic, 200, &mapOptimization::gpsHandler, this, ros::TransportHints().tcpNoDelay());
         subLoop  = nh.subscribe<std_msgs::Float64MultiArray>("lio_loop/loop_closure_detection", 1, &mapOptimization::loopInfoHandler, this, ros::TransportHints().tcpNoDelay());
 
-        srvSaveMap  = nh.advertiseService("lio_sam/save_map", &mapOptimization::saveMapService, this);
+        // srvSaveMap  = nh.advertiseService("lio_sam/save_map", &mapOptimization::saveMapService, this);
 
         pubHistoryKeyFrames   = nh.advertise<sensor_msgs::PointCloud2>("lio_sam/mapping/icp_loop_closure_history_cloud", 1);
         pubIcpKeyFrames       = nh.advertise<sensor_msgs::PointCloud2>("lio_sam/mapping/icp_loop_closure_corrected_cloud", 1);
@@ -257,7 +264,7 @@ public:
 
         // giseop
         // create directory and remove old files;
-        savePCDDirectory = std::getenv("HOME") + savePCDDirectory;
+        // savePCDDirectory = std::getenv("HOME") + savePCDDirectory; // rather use global path 
         int unused = system((std::string("exec rm -r ") + savePCDDirectory).c_str());
         unused = system((std::string("mkdir ") + savePCDDirectory).c_str());
 
@@ -462,68 +469,59 @@ public:
 
     bool saveMapService(lio_sam::save_mapRequest& req, lio_sam::save_mapResponse& res)
     {
-      string saveMapDirectory;
+        // if(!req.destination.empty()) savePCDDirectory = req.destination;
+        cout << "Save destination: " << savePCDDirectory << endl;
+	    // save pose graph (runs when programe is closing)
+        cout << "****************************************************" << endl;
+        cout << "Saving the posegraph ..." << endl; // giseop
 
-      cout << "****************************************************" << endl;
-      cout << "Saving map to pcd files ..." << endl;
-      if(req.destination.empty()) saveMapDirectory = std::getenv("HOME") + savePCDDirectory;
-      else saveMapDirectory = std::getenv("HOME") + req.destination;
-      cout << "Save destination: " << saveMapDirectory << endl;
-      // create directory and remove old files;
-      int unused = system((std::string("exec rm -r ") + saveMapDirectory).c_str());
-      unused = system((std::string("mkdir -p ") + saveMapDirectory).c_str());
-      // save key frame transformations
-      pcl::io::savePCDFileBinary(saveMapDirectory + "/trajectory.pcd", *cloudKeyPoses3D);
-      pcl::io::savePCDFileBinary(saveMapDirectory + "/transformations.pcd", *cloudKeyPoses6D);
-      // extract global point cloud map
-      pcl::PointCloud<PointType>::Ptr globalCornerCloud(new pcl::PointCloud<PointType>());
-      pcl::PointCloud<PointType>::Ptr globalCornerCloudDS(new pcl::PointCloud<PointType>());
-      pcl::PointCloud<PointType>::Ptr globalSurfCloud(new pcl::PointCloud<PointType>());
-      pcl::PointCloud<PointType>::Ptr globalSurfCloudDS(new pcl::PointCloud<PointType>());
-      pcl::PointCloud<PointType>::Ptr globalMapCloud(new pcl::PointCloud<PointType>());
-      for (int i = 0; i < (int)cloudKeyPoses3D->size(); i++) {
-          *globalCornerCloud += *transformPointCloud(cornerCloudKeyFrames[i],  &cloudKeyPoses6D->points[i]);
-          *globalSurfCloud   += *transformPointCloud(surfCloudKeyFrames[i],    &cloudKeyPoses6D->points[i]);
-          cout << "\r" << std::flush << "Processing feature cloud " << i << " of " << cloudKeyPoses6D->size() << " ...";
-      }
+        for(auto& _line: vertices_str)
+            pgSaveStream << _line << std::endl;
+        for(auto& _line: edges_str)
+            pgSaveStream << _line << std::endl;
+        pgSaveStream.close();
+        // pgVertexSaveStream.close();
+        // pgEdgeSaveStream.close();
+        const std::string kitti_format_pg_filename {savePCDDirectory + "optimized_poses.txt"};
+        saveOptimizedVerticesKITTIformat(keyframe_ids, isamCurrentEstimate, kitti_format_pg_filename);
 
-      if(req.resolution != 0)
-      {
-        cout << "\n\nSave resolution: " << req.resolution << endl;
+        cout << "****************************************************" << endl;
+        cout << "Saving map to pcd files ..." << endl;
+        // save key frame transformations
+        pcl::io::savePCDFileBinary(savePCDDirectory + "/trajectory.pcd", *cloudKeyPoses3D);
+        pcl::io::savePCDFileBinary(savePCDDirectory + "/transformations.pcd", *cloudKeyPoses6D);
+        // extract global point cloud map
+        pcl::PointCloud<PointType>::Ptr globalCornerCloud(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr globalCornerCloudDS(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr globalSurfCloud(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr globalSurfCloudDS(new pcl::PointCloud<PointType>());
+        pcl::PointCloud<PointType>::Ptr globalMapCloud(new pcl::PointCloud<PointType>());
+        for (int i = 0; i < (int)cloudKeyPoses3D->size(); i++) {
+            *globalCornerCloud += *transformPointCloud(cornerCloudKeyFrames[i],  &cloudKeyPoses6D->points[i]);
+            *globalSurfCloud   += *transformPointCloud(surfCloudKeyFrames[i],    &cloudKeyPoses6D->points[i]);
+            cout << "\r" << std::flush << "Processing feature cloud " << i << " of " << cloudKeyPoses6D->size() << " ...";
+        }
 
-        // down-sample and save corner cloud
+		// down-sample and save corner cloud
         downSizeFilterCorner.setInputCloud(globalCornerCloud);
-        downSizeFilterCorner.setLeafSize(req.resolution, req.resolution, req.resolution);
         downSizeFilterCorner.filter(*globalCornerCloudDS);
-        pcl::io::savePCDFileBinary(saveMapDirectory + "/CornerMap.pcd", *globalCornerCloudDS);
+        pcl::io::savePCDFileBinary(savePCDDirectory + "cloudCorner.pcd", *globalCornerCloudDS);
         // down-sample and save surf cloud
         downSizeFilterSurf.setInputCloud(globalSurfCloud);
-        downSizeFilterSurf.setLeafSize(req.resolution, req.resolution, req.resolution);
         downSizeFilterSurf.filter(*globalSurfCloudDS);
-        pcl::io::savePCDFileBinary(saveMapDirectory + "/SurfMap.pcd", *globalSurfCloudDS);
-      }
-      else
-      {
-        // save corner cloud
-        pcl::io::savePCDFileBinary(saveMapDirectory + "/CornerMap.pcd", *globalCornerCloud);
-        // save surf cloud
-        pcl::io::savePCDFileBinary(saveMapDirectory + "/SurfMap.pcd", *globalSurfCloud);
-      }
+        pcl::io::savePCDFileBinary(savePCDDirectory + "cloudSurf.pcd", *globalSurfCloudDS);
 
-      // save global point cloud map
-      *globalMapCloud += *globalCornerCloud;
-      *globalMapCloud += *globalSurfCloud;
+        // save global point cloud map
+        *globalMapCloud += *globalCornerCloud;
+        *globalMapCloud += *globalSurfCloud;
 
-      int ret = pcl::io::savePCDFileBinary(saveMapDirectory + "/GlobalMap.pcd", *globalMapCloud);
-      res.success = ret == 0;
+        int ret = pcl::io::savePCDFileBinary(savePCDDirectory + "/cloudGlobal.pcd", *globalMapCloud);
+        res.success = ret == 0;
 
-      downSizeFilterCorner.setLeafSize(mappingCornerLeafSize, mappingCornerLeafSize, mappingCornerLeafSize);
-      downSizeFilterSurf.setLeafSize(mappingSurfLeafSize, mappingSurfLeafSize, mappingSurfLeafSize);
+        cout << "****************************************************" << endl;
+        cout << "Saving map to pcd files completed\n" << endl;
 
-      cout << "****************************************************" << endl;
-      cout << "Saving map to pcd files completed\n" << endl;
-
-      return true;
+        return true;
     }
 
     void visualizeGlobalMapThread()
@@ -1026,7 +1024,7 @@ public:
         // save current transformation before any processing
         incrementalOdometryAffineFront = trans2Affine3f(transformTobeMapped);
 
-        static Eigen::Affine3f lastImuTransformation;
+        static Eigen::Affine3f lastImuTransformation;        
         // initialization
         if (cloudKeyPoses3D->points.empty())
         {
@@ -1035,15 +1033,24 @@ public:
             transformTobeMapped[2] = cloudInfo.imuYawInit;
             
             if (!gpsQueue.empty()) {
+                std::cout << "gpsQueue not empty" << std::endl;
                 nav_msgs::Odometry firstGPS = gpsQueue.front();
                 transformTobeMapped[2] = tf::getYaw(firstGPS.pose.pose.orientation);
-                std::cout << "gpsQueue not empty, yaw: " << transformTobeMapped[2]*180./M_PI << " deg" << std::endl;
+                transformTobeMapped[3] = firstGPS.pose.pose.position.x;
+                transformTobeMapped[4] = firstGPS.pose.pose.position.y;
+                transformTobeMapped[5] = firstGPS.pose.pose.position.z;
             } else {
                 std::cout << "gpsQueue empty" << std::endl;
             }
 
-            if (!useImuHeadingInitialization)
+            if (!useImuHeadingInitialization) {
+                std::cout << "useImuHeadingInitialization is False" << std::endl;
                 transformTobeMapped[2] = 0;
+                transformTobeMapped[3] = 0;
+                transformTobeMapped[4] = 0;
+                transformTobeMapped[5] = 0;
+            }
+            std::cout << "Set initial yaw: " << transformTobeMapped[2]*180./M_PI << " deg" << std::endl;
 
             lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit, cloudInfo.imuPitchInit, cloudInfo.imuYawInit); // save imu before return;
             return;
@@ -1654,6 +1661,12 @@ public:
 
     void addGPSFactor()
     {
+        if (!useGpsOdometry) {
+            while (gpsQueue.size() > 100) {
+                gpsQueue.pop_front();
+            }
+            return;
+        }
         if (gpsQueue.empty())
             return;
 
@@ -1815,8 +1828,7 @@ public:
         cloudKeyPoses6D->push_back(thisPose6D);
 
         // cout << "****************************************************" << endl;
-        // cout << "Pose covariance:" << endl;
-        // cout << isam->marginalCovariance(isamCurrentEstimate.size()-1) << endl << endl;
+        // cout << "Pose covariance: " << poseCovariance(3,3) << ", " << poseCovariance(4,4) << endl;
         poseCovariance = isam->marginalCovariance(isamCurrentEstimate.size()-1);
 
         // save updated transform
@@ -1875,6 +1887,9 @@ public:
         }
         pcl::io::savePCDFileBinary(saveNodePCDDirectory + curr_scd_node_idx + ".pcd", *thisKeyFrameCloud);
         pgTimeSaveStream << laserCloudRawTime << std::endl;
+
+        keyframe_ids.push_back(cloudInfo.scan_id);
+        std::cout << "key frame scan_id: " << cloudInfo.scan_id << std::endl;
 
         // save path for visualization
         updatePath(thisPose6D);

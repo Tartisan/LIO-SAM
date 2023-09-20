@@ -1,0 +1,12 @@
+<launch>
+
+    <arg name="project" default="lio_sam"/>
+    
+    <!-- Parameters -->
+    <rosparam file="$(find lio_sam)/config/params_bst.yaml" command="load" />
+
+    <!--- Run Navsat -->
+    <node pkg="lio_sam" type="lio_sam_gpsOdometry" name="lio_sam_gpsOdometry" output="screen" />
+
+
+</launch>

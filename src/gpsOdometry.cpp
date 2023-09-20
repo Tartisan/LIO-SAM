@@ -14,10 +14,12 @@
 
 class GpsOdometry : public ParamServer {
 public:
-    GpsOdometry(ros::NodeHandle &nh) {
-        subGps = nh.subscribe<sensor_msgs::NavSatFix>("/gps/fix", 1000, &GpsOdometry::gpsHandler, this, ros::TransportHints().tcpNoDelay());
+    GpsOdometry(ros::NodeHandle &nh, ros::NodeHandle &private_nh) {
+        private_nh.param<std::string>("initial_lonlat", initial_lonlat, "");
+
+        subGps = nh.subscribe<sensor_msgs::NavSatFix>("gps/fix", 1000, &GpsOdometry::gpsHandler, this, ros::TransportHints().tcpNoDelay());
         subImu = nh.subscribe<sensor_msgs::Imu>(imuTopic, 1000, &GpsOdometry::imuHandler, this, ros::TransportHints().tcpNoDelay());
-        pubGpsOdom = nh.advertise<nav_msgs::Odometry>("/odometry/gps", 100, false);
+        pubGpsOdom = nh.advertise<nav_msgs::Odometry>("odometry/gps", 100, false);
         pubGpsPath = nh.advertise<nav_msgs::Path>("lio_sam/gps/path", 100);
     }
 
@@ -31,9 +33,13 @@ private:
         Eigen::Vector3d lla(msg->latitude, msg->longitude, msg->altitude);
         //std::cout << "LLA: " << lla.transpose() << std::endl;
         if (!initXyz) {
-            ROS_INFO("Init Orgin GPS LLA  %f, %f, %f", msg->latitude, msg->longitude,
-                     msg->altitude);
-            geo_converter.Reset(lla[0], lla[1], lla[2]);
+            if (initial_lonlat == "") {
+                ROS_INFO("Init Orgin GPS LLA  %f, %f, %f", msg->latitude, msg->longitude, msg->altitude);
+                geo_converter.Reset(lla[0], lla[1], lla[2]);
+            } else {
+                initial_lla = parseLonlat(initial_lonlat);
+                geo_converter.Reset(initial_lla[0], initial_lla[1], initial_lla[2]);
+            }
             initXyz = true;
         }
 
@@ -43,7 +49,7 @@ private:
         // LLA->ENU, better accuacy than gpsTools especially for z value
         double x, y, z;
         geo_converter.Forward(lla[0], lla[1], lla[2], x, y, z);
-        std::cout << "enu: " << x << ", " << y << ", " << z << std::endl;
+        // std::cout << "enu: " << x << ", " << y << ", " << z << std::endl;
         Eigen::Vector3d enu(x, y, z);
         if (abs(enu.x()) > 10000 || abs(enu.y()) > 10000 || abs(enu.z()) > 10000) {
             ROS_INFO("Error ogigin : %f, %f, %f", enu(0), enu(1), enu(2));
@@ -92,6 +98,18 @@ private:
         currImu = imuConverter(*msg);
     }
 
+    Eigen::Vector3d parseLonlat(const std::string &lonlat_str) {
+        std::vector<float> numbers;
+        std::stringstream ss(lonlat_str);
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+            float number = std::stof(token);
+            numbers.push_back(number);
+        }
+        Eigen::Vector3d lla(numbers[1], numbers[0], 0); // lat, lon, alt
+        return lla;
+    }
+
 
     ros::Publisher pubGpsOdom, pubGpsPath, init_origin_pub;
     ros::Subscriber subGps, subImu;
@@ -100,6 +118,8 @@ private:
     std::deque<sensor_msgs::NavSatFixConstPtr> gpsBuf;
 
     bool initXyz = false;
+    std::string initial_lonlat;
+    Eigen::Vector3d initial_lla;
     nav_msgs::Path gps_path;
     GeographicLib::LocalCartesian geo_converter;
     sensor_msgs::Imu currImu;
@@ -108,7 +128,8 @@ private:
 int main(int argc, char **argv) {
     ros::init(argc, argv, "lio_sam");
     ros::NodeHandle nh;
-    GpsOdometry gps(nh);
+    ros::NodeHandle private_nh("~");
+    GpsOdometry gps(nh, private_nh);
     ROS_INFO("\033[1;32m----> Simple GPS Odmetry Started.\033[0m");
     ros::spin();
     return 1;

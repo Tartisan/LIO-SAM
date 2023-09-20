@@ -83,6 +83,7 @@ public:
     string mapFrame;
 
     // GPS Settings
+    bool useGpsOdometry;
     bool useImuHeadingInitialization;
     bool useGpsElevation;
     float gpsCovThreshold;
@@ -155,7 +156,6 @@ public:
     float globalMapVisualizationPoseDensity;
     float globalMapVisualizationLeafSize;
 
-    float imu_rate;
 
     ParamServer()
     {
@@ -171,6 +171,7 @@ public:
         nh.param<std::string>("lio_sam/odometryFrame", odometryFrame, "odom");
         nh.param<std::string>("lio_sam/mapFrame", mapFrame, "map");
 
+        nh.param<bool>("lio_sam/useGpsOdometry", useGpsOdometry, false);
         nh.param<bool>("lio_sam/useImuHeadingInitialization", useImuHeadingInitialization, false);
         nh.param<bool>("lio_sam/useGpsElevation", useGpsElevation, false);
         nh.param<float>("lio_sam/gpsCovThreshold", gpsCovThreshold, 2.0);
@@ -180,7 +181,7 @@ public:
         nh.param<std::string>("lio_sam/savePCDDirectory", savePCDDirectory, "/Downloads/LOAM/");
 
         std::string sensorStr;
-        nh.param<std::string>("lio_sam/sensor", sensorStr, "");
+        nh.param<std::string>("lio_sam/sensor", sensorStr, "velodyne");
         if (sensorStr == "velodyne")
         {
             sensor = SensorType::VELODYNE;
